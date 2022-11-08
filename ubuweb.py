@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import requests
 import re
 from pprint import pprint
+import time
+import json
 
 def scrape_url(url):
     URL = url
@@ -97,40 +99,46 @@ if __name__ == "__main__":
         # potentially remove the dance pages
     print(artist_pages)
     full_dict = {}
-    for artist_page_link in artist_pages[0:10]:
+    # for artist_page_link in artist_pages[0:10]:
+    for artist_page_link in artist_pages:
+        # full_dict = {}
         # check if page contains ububody
         # if it does run the scrape content function
         artist_html = scrape_url(artist_page_link)
         if artist_html.find("div", {"class": "ububody"}) is None:
+            time.sleep(1)
             print(artist_page_link)
             print("Tag not Found")
-            artist_description, artist_artwork_links, sound_links = filter_artist_page(artist_html)
-            for link in artist_artwork_links:
-                artist_html2 = scrape_url(link)
-                # print(artist_html2.find("div", {"class": "ububody"}))
-                if artist_html2.find("div", {"class": "ububody"}) is not None:
-                    the_html = scrape_url(link)
-                    dict1 = scrape_ubu_body(the_html, artist_description)
-                    print("-----------------------------")
-                    print("the link is: ", link)
-                    pprint(dict1)
-                    full_dict[dict1['film_title']] = (dict1)
-                    print("-----------------------------") 
-                # print(artist_description)
-            # table_body = artist_html.findAll("td", {"class": "default"})
-            # artist_description = table_body[1].text
-            # print("the descirption is: ", artist_description)
-            # artist_artwork_links = table_body[1].findAll('a')
-            # for link in artist_artwork_links:
-            #     full_artwork_link = str(artist_page_link.replace(".html", "")) + "/" + str(link)
-            #     print("the full artwork link is: ", full_artwork_link)
-            #     dict1 = scrape_ubu_body(full_artwork_link, artist_description)
+            try:
+                artist_description, artist_artwork_links, sound_links = filter_artist_page(artist_html)
+                for link in artist_artwork_links:
+                    artist_html2 = scrape_url(link)
+                    # print(artist_html2.find("div", {"class": "ububody"}))
+                    if artist_html2.find("div", {"class": "ububody"}) is not None:
+                        the_html = scrape_url(link)
+                        dict1 = scrape_ubu_body(the_html, artist_description)
+                        print("-----------------------------")
+                        print("the link is: ", link)
+                        pprint(dict1)
+                        full_dict[dict1['film_title']] = (dict1)
+                        print("-----------------------------")
+                        with open('result4.json', 'w') as fp:
+                            json.dump(full_dict, fp, indent=4)
+
+            except:
+                pass
         else:
             print("artist page link is: ", artist_page_link)
-            dict1 = scrape_ubu_body(artist_html, None)
-            print(dict1)
-            full_dict.append(dict1)
-    print(dict1)    
+            try: 
+                dict1 = scrape_ubu_body(artist_html, None)
+                print(dict1)
+                full_dict[dict1['film_title']] = (dict1)
+                with open('result4.json', 'w') as fp:
+                    json.dump(full_dict, fp, indent=4)
+            except:
+                pass
+    # print(full_dict)
+  
 
     # https://www.ubu.com/film/averty_gainsbourg.html
 
